@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>edm.frames · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0b;--card:#141414;--line:#262626;--fg:#f4f2ee;--mute:#8d8a84;--gold:#d2ad5a;--red:#e5484d;--green:#46c37b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font:400 15px/1.5 "Inter Tight",system-ui,Arial,sans-serif;padding-bottom:90px}
+a{color:var(--gold)}
+.wrap{max-width:980px;margin:0 auto;padding:18px}
+header{position:sticky;top:0;z-index:20;background:rgba(11,11,11,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:10px;padding:12px 18px}
+header b{font-weight:700;letter-spacing:-.02em;flex:1}
+header b span{color:var(--gold)}
+button,.btn{font:500 14px "Inter Tight",sans-serif;border:1px solid var(--line);background:#1b1b1b;color:var(--fg);border-radius:99px;padding:9px 16px;cursor:pointer}
+button:hover{border-color:#444}
+.pri{background:var(--gold);color:#000;border-color:var(--gold)}
+.pri:disabled{opacity:.4;cursor:default}
+.dng{color:var(--red)}
+.tabs{display:flex;gap:6px;margin:16px 0}
+.tabs button.on{background:var(--fg);color:#000}
+h2{font-size:22px;font-weight:500;letter-spacing:-.03em;margin:6px 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:12px;color:var(--mute);margin:12px 0 5px;letter-spacing:.04em}
+input,textarea,select{width:100%;background:#0e0e0e;border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:11px 12px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
+.up{border:2px dashed #3a3a3a;border-radius:16px;padding:26px;text-align:center;color:var(--mute);cursor:pointer;margin-bottom:16px}
+.up:hover{border-color:var(--gold);color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.fr{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.fr img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;background:#111}
+.fr .b{padding:10px}
+.fr .row{display:flex;gap:6px;margin-top:8px;align-items:center}
+.fr .row button{padding:6px 11px;flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);margin-top:8px}
+.chk input{width:auto}
+.new{position:absolute;margin:8px;background:var(--gold);color:#000;font-size:11px;font-weight:700;border-radius:99px;padding:2px 9px}
+details{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:12px}
+summary{padding:15px 16px;cursor:pointer;font-weight:500;list-style:none}
+summary::after{content:"+";float:right;color:var(--gold)}
+details[open] summary::after{content:"–"}
+details>div{padding:0 16px 16px}
+.pv{width:120px;aspect-ratio:3/4;object-fit:cover;border-radius:10px;margin:6px 0;display:block;background:#111}
+.pv.w{width:100%;max-width:380px;aspect-ratio:auto;object-fit:contain}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;border:1px solid #444;padding:12px 18px;border-radius:14px;z-index:50;max-width:92vw;display:none}
+#toast.bad{border-color:var(--red)}#toast.ok{border-color:var(--green)}
+.login{max-width:480px;margin:8vh auto 0}
+.hint{color:var(--mute);font-size:13px;margin-top:10px}
+ol{margin:10px 0 0 20px;color:#cfccc6}ol li{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="toast"></div>
+<script>
+const LS='edm_admin_v1';
+let cfg=JSON.parse(localStorage.getItem(LS)||'null');
+let C=null,sha=null,tab='frames',dirty=false;
+const pending=new Map(),prev={},removed=new Set();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const get=(o,p)=>p.split('.').reduce((a,k)=>a&&a[k],o);
+const set=(o,p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((a,k)=>a[k],o)[l]=v};
+const u8=s=>btoa(unescape(encodeURIComponent(s)));
+const de=b=>decodeURIComponent(escape(atob(b.replace(/\n/g,''))));
+function toast(m,t=''){const e=$('#toast');e.textContent=m;e.className=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',t==='bad'?7000:3500)}
+
+async function api(path,opt={}){
+  const r=await fetch(`https://api.github.com/repos/${cfg.repo}/${path}`,{...opt,headers:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json','Content-Type':'application/json'}});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.message||('GitHub error '+r.status));
+  return j}
+
+const FIELDS=[
+['Home page',[['hero.s1t','Step 1 title'],['hero.s1d','Step 1 text'],['hero.s2t','Step 2 title'],['hero.s2d','Step 2 text'],['hero.s3t','Step 3 title'],['hero.s3d','Step 3 text'],['hero.tag','Hero tagline']]],
+['Story section',[['story.l1','Line 1'],['story.l2','Line 2 (shown in italic)'],['story.l3','Line 3'],['story.cap1','Caption (left)'],['story.cap2','Caption (right)']]],
+['Frames wall',[['wall.title','Title'],['wall.text','Text','area']]],
+['About Satyam',[['about.eyebrow','Small label'],['about.name','Name (press Enter for a new line)','area'],['about.role','Role'],['about.p.0','Paragraph 1','area'],['about.p.1','Paragraph 2','area'],['about.p.2','Paragraph 3','area'],['about.managed','Managed-by line'],['about.steps.0.t','Step 1'],['about.steps.0.d','Step 1 note'],['about.steps.1.t','Step 2'],['about.steps.1.d','Step 2 note'],['about.steps.2.t','Step 3'],['about.steps.2.d','Step 3 note'],['about.image','About photo','img']]],
+['Creators comment',[['creators.t1','Title line 1'],['creators.t2','Title line 2 (italic)'],['creators.text','Text','area'],['creators.image','Comment screenshot','img']]],
+['Contact',[['contact.t1','Title'],['contact.t2','Title (italic)'],['site.email','Email'],['site.phoneShow','Phone (as shown)'],['site.phone','Phone for links (digits with country code)'],['site.instagram','Instagram handle (without @)'],['site.facebookName','Facebook name'],['site.facebookUrl','Facebook page link (optional)']]],
+['Footer',[['footer.managed','Managed by'],['footer.designed','Designed by']]]];
+
+function imgSrc(p){return prev[p]||('../'+p)}
+function mark(){dirty=true;const n=pending.size+1;const b=$('#pub');if(b){b.disabled=false;b.textContent='Publish changes'}}
+
+async function resize(file,max=1400){
+  const bm=await createImageBitmap(file);
+  const s=Math.min(1,max/Math.max(bm.width,bm.height));
+  const c=document.createElement('canvas');c.width=Math.round(bm.width*s);c.height=Math.round(bm.height*s);
+  c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+  const url=c.toDataURL('image/jpeg',.82);return{url,b64:url.split(',')[1]}}
+async function addImage(file,i=0){
+  const r=await resize(file);const name=`images/${Date.now()}-${i}.jpg`;
+  pending.set(name,r.b64);prev[name]=r.url;return name}
+
+/* ---------- views ---------- */
+function loginView(msg=''){
+  $('#app').innerHTML=`<div class="wrap login"><h2>edm.frames admin</h2>
+  <div class="card"><label>GitHub token</label><input id="tk" type="password" placeholder="github_pat_..." autocomplete="off" value="${esc(cfg?.token||'')}">
+  <label>Repository (owner/name)</label><input id="rp" placeholder="yourname/edm-frames" value="${esc(cfg?.repo||'')}">
+  <label>Branch</label><input id="br" value="${esc(cfg?.branch||'main')}">
+  <p class="hint" style="color:var(--red)">${esc(msg)}</p>
+  <div style="margin-top:14px"><button class="pri" id="go">Connect</button></div>
+  <p class="hint">Token stays only in this browser. First time? See README for the 2-minute token setup.</p></div></div>`;
+  $('#go').onclick=async()=>{cfg={token:$('#tk').value.trim(),repo:$('#rp').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,''),branch:$('#br').value.trim()||'main'};
+    try{await connect();localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){loginView(e.message)}}}
+
+async function connect(){
+  await api('');
+  const j=await api(`contents/content.json?ref=${cfg.branch}`);
+  sha=j.sha;C=JSON.parse(de(j.content));dirty=false;pending.clear();removed.clear();render()}
+
+function render(){
+  const pc=pending.size;
+  $('#app').innerHTML=`<header><div class="wrap"><b>edm<span>.frames</span> admin</b>
+    <a href="../" target="_blank"><button>View site</button></a>
+    <button class="pri" id="pub" ${dirty?'':'disabled'}>${dirty?'Publish changes':'No changes'}</button>
+    <button id="out">Log out</button></div></header>
+  <div class="wrap"><div class="tabs"><button data-t="frames" class="${tab=='frames'?'on':''}">Frames</button><button data-t="info" class="${tab=='info'?'on':''}">Text &amp; info</button></div>
+  <div id="body"></div></div>`;
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+  $('#out').onclick=()=>{localStorage.removeItem(LS);cfg=null;C=null;loginView()};
+  $('#pub').onclick=publish;
+  tab==='frames'?framesView():infoView()}
+
+function framesView(){
+  const cats=C.categories;
+  $('#body').innerHTML=`<label class="up" for="fi" style="display:block"><b style="color:var(--fg)">+ Add new frames</b><br>Tap to choose photos (you can pick many). They are resized automatically.</label>
+  <input id="fi" type="file" accept="image/*" multiple hidden>
+  <div class="card"><label>Categories (comma separated)</label><input id="cats" value="${esc(cats.join(', '))}"></div>
+  <h2>${C.frames.length} frames</h2><p class="hint" style="margin:-6px 0 12px">Order here = order on the site. "Hero" frames appear in the big zoom animation on the home page.</p>
+  <div class="grid" id="gr">${C.frames.map((f,i)=>`<div class="fr">${pending.has(f.src)?'<span class="new">NEW</span>':''}<img src="${esc(imgSrc(f.src))}" alt=""><div class="b">
+   <select data-i="${i}" data-k="cat">${cats.map(c=>`<option ${c===f.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>
+   <input data-i="${i}" data-k="alt" placeholder="Short caption" value="${esc(f.alt)}" style="margin-top:6px">
+   <label class="chk"><input type="checkbox" data-i="${i}" data-k="featured" ${f.featured?'checked':''}>Hero frame</label>
+   <div class="row"><button data-m="${i}" data-d="-1">←</button><button data-m="${i}" data-d="1">→</button><button class="dng" data-x="${i}">Delete</button></div></div></div>`).join('')}</div>`;
+  $('#fi').onchange=async e=>{toast('Processing photos...');let i=0;for(const f of e.target.files){C.frames.unshift({src:await addImage(f,i++),cat:cats[0],alt:'',featured:false})}mark();render();toast(i+' photo(s) added. Press Publish to go live.','ok')};
+  $('#cats').onchange=e=>{const n=e.target.value.split(',').map(s=>s.trim()).filter(Boolean);if(n.length){C.categories=n;mark();render()}};
+  document.querySelectorAll('#gr [data-k]').forEach(el=>el.onchange=()=>{const f=C.frames[+el.dataset.i];f[el.dataset.k]=el.type==='checkbox'?el.checked:el.value;mark()});
+  document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const i=+b.dataset.m,j=i+ +b.dataset.d;if(j<0||j>=C.frames.length)return;[C.frames[i],C.frames[j]]=[C.frames[j],C.frames[i]];mark();render()});
+  document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(!confirm('Delete this frame?'))return;const f=C.frames.splice(+b.dataset.x,1)[0];if(pending.has(f.src)){pending.delete(f.src)}else removed.add(f.src);mark();render()})}
+
+function infoView(){
+  $('#body').innerHTML=FIELDS.map(([g,fs],gi)=>`<details ${gi==0?'open':''}><summary>${g}</summary><div>${fs.map(([p,l,t])=>{
+    const v=get(C,p)??'';
+    if(t==='img')return`<label>${l}</label><img class="pv ${p.startsWith('creators')?'w':''}" src="${esc(imgSrc(v))}" alt=""><input type="file" accept="image/*" data-img="${p}">`;
+    return`<label>${l}</label>${t==='area'?`<textarea data-p="${p}">${esc(v)}</textarea>`:`<input data-p="${p}" value="${esc(v)}">`}`}).join('')}</div></details>`).join('');
+  document.querySelectorAll('[data-p]').forEach(el=>el.oninput=()=>{set(C,el.dataset.p,el.value);mark()});
+  document.querySelectorAll('[data-img]').forEach(el=>el.onchange=async()=>{if(!el.files[0])return;const p=el.dataset.img,old=get(C,p);set(C,p,await addImage(el.files[0]));if(old&&old.startsWith('images/')&&!pending.has(old))removed.add(old);mark();render();tab='info'})}
+
+/* ---------- publish ---------- */
+async function publish(){
+  const b=$('#pub');b.disabled=true;b.textContent='Publishing...';
+  try{
+    const used=new Set([...C.frames.map(f=>f.src),C.about.image,C.creators.image]);
+    for(const [name,b64] of pending){ if(!used.has(name))continue;
+      await api(`contents/${name}`,{method:'PUT',body:JSON.stringify({message:'admin: add '+name,content:b64,branch:cfg.branch})})}
+    for(const p of removed){ if(used.has(p)||!p.startsWith('images/'))continue;
+      try{const j=await api(`contents/${p}?ref=${cfg.branch}`);await api(`contents/${p}`,{method:'DELETE',body:JSON.stringify({message:'admin: remove '+p,sha:j.sha,branch:cfg.branch})})}catch(e){}}
+    const r=await api('contents/content.json',{method:'PUT',body:JSON.stringify({message:'admin: update content',content:u8(JSON.stringify(C,null,2)),sha,branch:cfg.branch})});
+    sha=r.content.sha;pending.clear();removed.clear();dirty=false;render();
+    toast('Published! The live site updates in about 1 minute.','ok')
+  }catch(e){dirty=true;render();toast('Failed: '+e.message,'bad')}}
+
+addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+if(cfg&&cfg.token&&cfg.repo){connect().catch(e=>loginView(e.message))}else loginView();
+</script>
+</body>
+</html>

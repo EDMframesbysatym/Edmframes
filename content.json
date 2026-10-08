@@ -1,0 +1,192 @@
+{
+  "site": {
+    "instagram": "edm.frames",
+    "email": "ediyamvision@gmail.com",
+    "phone": "918770158947",
+    "phoneShow": "+91 87701 58947",
+    "facebookName": "edm frame",
+    "facebookUrl": ""
+  },
+  "hero": {
+    "s1t": "Click",
+    "s1d": "Captured on a phone, in the moment.",
+    "s2t": "Edit",
+    "s2d": "Light, colour and mood by hand.",
+    "s3t": "Upload",
+    "s3d": "Shared on Instagram first.",
+    "tag": "Moments captured, and the feeling kept."
+  },
+  "story": {
+    "l1": "Everyday",
+    "l2": "moments,",
+    "l3": "framed.",
+    "cap1": "Temples, rain, old scooters and slow evenings, edited one frame at a time.",
+    "cap2": "Scroll to see the frames."
+  },
+  "wall": {
+    "title": "Your next favourite frame is here",
+    "text": "New edits go up on Instagram first. Follow along, or message to order a print."
+  },
+  "about": {
+    "eyebrow": "About the artist",
+    "name": "Satyam\nSingh",
+    "role": "Creative artist",
+    "p": [
+      "I don't just click a moment, I feel it. Somewhere deep inside, a quiet voice tells me to stop, look and hold on to a scene before it slips away.",
+      "It could be a wet leaf after the rain, an old scooter resting under a tree, or a sky turning orange above a railway station. I capture it on my phone, then sit with it and edit slowly, until the frame says what I felt in that one second.",
+      "edm.frames is where those feelings live. Every post follows the same simple path: click, edit, upload."
+    ],
+    "managed": "Managed by Satyam Singh. He runs this entire profile.",
+    "steps": [
+      {
+        "t": "Click",
+        "d": "Phone camera, real light"
+      },
+      {
+        "t": "Edit",
+        "d": "Colour, mood and crop"
+      },
+      {
+        "t": "Upload",
+        "d": "Posted to @edm.frames"
+      }
+    ],
+    "image": "images/about.jpg"
+  },
+  "creators": {
+    "t1": "Creators",
+    "t2": "notice.",
+    "text": "A verified creator dropped a comment on one of our frames. Real feedback, straight from Instagram.",
+    "image": "images/comment.jpg"
+  },
+  "contact": {
+    "t1": "Let's frame",
+    "t2": "something."
+  },
+  "footer": {
+    "managed": "$atyam",
+    "designed": "$atyam"
+  },
+  "categories": [
+    "Heritage",
+    "Street",
+    "Skies",
+    "Rain"
+  ],
+  "frames": [
+    {
+      "src": "images/frame-01.jpg",
+      "cat": "Street",
+      "alt": "Radio on a log, Hindi caption",
+      "featured": true
+    },
+    {
+      "src": "images/frame-02.jpg",
+      "cat": "Heritage",
+      "alt": "Temple tower with flags",
+      "featured": false
+    },
+    {
+      "src": "images/frame-03.jpg",
+      "cat": "Heritage",
+      "alt": "Orange and white temple domes",
+      "featured": true
+    },
+    {
+      "src": "images/frame-04.jpg",
+      "cat": "Rain",
+      "alt": "Rain and sunset on a village street",
+      "featured": false
+    },
+    {
+      "src": "images/frame-05.jpg",
+      "cat": "Rain",
+      "alt": "Wet rose leaves",
+      "featured": false
+    },
+    {
+      "src": "images/frame-06.jpg",
+      "cat": "Rain",
+      "alt": "Man walking with an umbrella",
+      "featured": false
+    },
+    {
+      "src": "images/frame-07.jpg",
+      "cat": "Street",
+      "alt": "Child smiling through a box hole",
+      "featured": false
+    },
+    {
+      "src": "images/frame-08.jpg",
+      "cat": "Heritage",
+      "alt": "Old gateway at dusk",
+      "featured": false
+    },
+    {
+      "src": "images/frame-09.jpg",
+      "cat": "Heritage",
+      "alt": "Window in a mud wall",
+      "featured": false
+    },
+    {
+      "src": "images/frame-10.jpg",
+      "cat": "Skies",
+      "alt": "Bare tree at sunset",
+      "featured": false
+    },
+    {
+      "src": "images/frame-11.jpg",
+      "cat": "Skies",
+      "alt": "Tower against the dusk",
+      "featured": false
+    },
+    {
+      "src": "images/frame-12.jpg",
+      "cat": "Heritage",
+      "alt": "Temple domes and sky",
+      "featured": false
+    },
+    {
+      "src": "images/frame-13.jpg",
+      "cat": "Skies",
+      "alt": "Single cloud",
+      "featured": false
+    },
+    {
+      "src": "images/frame-14.jpg",
+      "cat": "Street",
+      "alt": "Old Bajaj scooter",
+      "featured": true
+    },
+    {
+      "src": "images/frame-15.jpg",
+      "cat": "Heritage",
+      "alt": "Museum wall of old photographs",
+      "featured": false
+    },
+    {
+      "src": "images/frame-16.jpg",
+      "cat": "Street",
+      "alt": "Musafir Cafe book in hand",
+      "featured": false
+    },
+    {
+      "src": "images/frame-17.jpg",
+      "cat": "Skies",
+      "alt": "Sunset over the station",
+      "featured": false
+    },
+    {
+      "src": "images/frame-18.jpg",
+      "cat": "Street",
+      "alt": "Ambassador car under trees",
+      "featured": false
+    },
+    {
+      "src": "images/frame-19.jpg",
+      "cat": "Heritage",
+      "alt": "Old mansion at night",
+      "featured": true
+    }
+  ]
+}
